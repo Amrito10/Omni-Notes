@@ -18,7 +18,6 @@
 package it.feio.android.omninotes;
 
 import android.animation.ValueAnimator;
-import android.content.res.Resources;
 import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Bundle;

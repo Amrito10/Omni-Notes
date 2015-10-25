@@ -61,14 +61,14 @@ public class AlarmReceiver extends BroadcastReceiver {
 		snoozeIntent.setAction(Constants.ACTION_SNOOZE);
 		snoozeIntent.putExtra(Constants.INTENT_NOTE, (android.os.Parcelable) note);
 		snoozeIntent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-		PendingIntent piSnooze = PendingIntent.getActivity(mContext, 0, snoozeIntent,
+		PendingIntent piSnooze = createPendingIntent(mContext, 0, snoozeIntent,
 				PendingIntent.FLAG_UPDATE_CURRENT);
 
 		Intent postponeIntent = new Intent(mContext, SnoozeActivity.class);
 		postponeIntent.setAction(Constants.ACTION_POSTPONE);
 		postponeIntent.putExtra(Constants.INTENT_NOTE, (android.os.Parcelable) note);
 		snoozeIntent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-		PendingIntent piPostpone = PendingIntent.getActivity(mContext, 0, postponeIntent,
+		PendingIntent piPostpone = createPendingIntent(mContext, 0, postponeIntent,
 				PendingIntent.FLAG_UPDATE_CURRENT);
 
 		String snoozeDelay = mContext.getSharedPreferences(Constants.PREFS_NAME,
@@ -85,8 +85,7 @@ public class AlarmReceiver extends BroadcastReceiver {
 		// Workaround to fix problems with multiple notifications
 		intent.setAction(Constants.ACTION_NOTIFICATION_CLICK + Long.toString(System.currentTimeMillis()));
 
-		// Creates the PendingIntent
-		PendingIntent notifyIntent = PendingIntent.getActivity(mContext, 0, intent,
+		PendingIntent notifyIntent = createPendingIntent(mContext, 0, intent,
 				PendingIntent.FLAG_UPDATE_CURRENT);
 
 		NotificationsHelper notificationsHelper = new NotificationsHelper(mContext);
@@ -106,17 +105,23 @@ public class AlarmReceiver extends BroadcastReceiver {
 						it.feio.android.omninotes.utils.TextHelper.capitalize(mContext.getString(R.string
 								.add_reminder)), piPostpone);
 
-		// Ringtone options
-		String ringtone = prefs.getString("settings_notification_ringtone", null);
-		if (ringtone != null) {
-			notificationsHelper.setRingtone(ringtone);
-		}
+        setAlarm(prefs, notificationsHelper);
 
-		// Vibration options
-		if (prefs.getBoolean("settings_notification_vibration", true)) {
-			notificationsHelper.setVibration();
-		}
+		setVibrate(prefs, notificationsHelper);
 
 		notificationsHelper.show(note.get_id());
 	}
+
+    private PendingIntent createPendingIntent(Context context, int requestCode, Intent intent, int flags) {
+        return PendingIntent.getActivity(context, requestCode, intent, flags);
+    }
+
+    private void setAlarm(SharedPreferences prefs,NotificationsHelper notificationsHelper) {
+        String ringtone = prefs.getString("settings_notification_ringtone", null);
+        if (ringtone != null) notificationsHelper.setRingtone(ringtone);
+    }
+
+    private void setVibrate(SharedPreferences prefs, NotificationsHelper notificationsHelper) {
+        if (prefs.getBoolean("settings_notification_vibration", true)) notificationsHelper.setVibration();
+    }
 }

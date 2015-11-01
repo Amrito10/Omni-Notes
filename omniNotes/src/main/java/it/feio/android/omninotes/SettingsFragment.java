@@ -127,354 +127,42 @@ public class SettingsFragment extends PreferenceFragment {
 
         importNotes();
 
-		// Import notes from Springpad export zip file
-		Preference importFromSpringpad = findPreference("settings_import_from_springpad");
-		if (importFromSpringpad != null) {
-			importFromSpringpad.setOnPreferenceClickListener(arg0 -> {
-				Intent intent;
-				intent = new Intent(Intent.ACTION_GET_CONTENT);
-				intent.addCategory(Intent.CATEGORY_OPENABLE);
-				intent.setType("application/zip");
-				if (!IntentChecker.isAvailable(getActivity(), intent, null)) {
-					Toast.makeText(getActivity(), R.string.feature_not_available_on_this_device,
-							Toast.LENGTH_SHORT).show();
-					return false;
-				}
-				startActivityForResult(intent, SPRINGPAD_IMPORT);
-				return false;
-			});
-		}
+        importFromSpringpad();
 
+        syncWithDrive();
 
-//		Preference syncWithDrive = findPreference("settings_backup_drive");
-//		importFromSpringpad.setOnPreferenceClickListener(new OnPreferenceClickListener() {
-//			@Override
-//			public boolean onPreferenceClick(Preference arg0) {
-//				Intent intent;
-//				intent = new Intent(Intent.ACTION_GET_CONTENT);
-//				intent.addCategory(Intent.CATEGORY_OPENABLE);
-//				intent.setType("application/zip");
-//				if (!IntentChecker.isAvailable(getActivity(), intent, null)) {
-//					Crouton.makeText(getActivity(), R.string.feature_not_available_on_this_device,
-// ONStyle.ALERT).show();
-//					return false;
-//				}
-//				startActivityForResult(intent, SPRINGPAD_IMPORT);
-//				return false;
-//			}
-//		});
+	    swipeToTrash();
 
+        showUncategorizedNotes();
 
-		// Swiping action
-		final CheckBoxPreference swipeToTrash = (CheckBoxPreference) findPreference("settings_swipe_to_trash");
-		if (swipeToTrash != null) {
-			if (prefs.getBoolean("settings_swipe_to_trash", false)) {
-				swipeToTrash.setChecked(true);
-				swipeToTrash.setSummary(getResources().getString(R.string.settings_swipe_to_trash_summary_2));
-			} else {
-				swipeToTrash.setSummary(getResources().getString(R.string.settings_swipe_to_trash_summary_1));
-				swipeToTrash.setChecked(false);
-			}
-			swipeToTrash.setOnPreferenceChangeListener((preference, newValue) -> {
-				if ((Boolean) newValue) {
-					swipeToTrash.setSummary(getResources().getString(R.string.settings_swipe_to_trash_summary_2));
-				} else {
-					swipeToTrash.setSummary(getResources().getString(R.string.settings_swipe_to_trash_summary_1));
-				}
-				swipeToTrash.setChecked((Boolean) newValue);
-				return false;
-			});
-		}
+        autoAddLocation();
 
+        maxVideoSize();
 
-		// Show uncategorized notes in menu
-		final CheckBoxPreference showUncategorized = (CheckBoxPreference) findPreference(Constants
-				.PREF_SHOW_UNCATEGORIZED);
-		if (showUncategorized != null) {
-			showUncategorized.setOnPreferenceChangeListener((preference, newValue) -> {
-				showUncategorized.setChecked((Boolean) newValue);
-				return false;
-			});
-		}
+        setNotesProtectionPassword();
 
+        grantApplicationAccess();
 
-		// Show Automatically adds location to new notes
-		final CheckBoxPreference autoLocation = (CheckBoxPreference) findPreference(Constants.PREF_AUTO_LOCATION);
-		if (autoLocation != null) {
-			autoLocation.setOnPreferenceChangeListener((preference, newValue) -> {
-				autoLocation.setChecked((Boolean) newValue);
-				return false;
-			});
-		}
+        language();
 
+        textSize();
 
-		// Maximum video attachment size
-		final EditTextPreference maxVideoSize = (EditTextPreference) findPreference("settings_max_video_size");
-		if (maxVideoSize != null) {
-			String maxVideoSizeValue = prefs.getString("settings_max_video_size", getString(R.string.not_set));
-			maxVideoSize.setSummary(getString(R.string.settings_max_video_size_summary) + ": " + String.valueOf
-					(maxVideoSizeValue));
-			maxVideoSize.setOnPreferenceChangeListener((preference, newValue) -> {
-				maxVideoSize.setSummary(getString(R.string.settings_max_video_size_summary) + ": " + String
-						.valueOf(newValue));
-				prefs.edit().putString("settings_max_video_size", newValue.toString()).commit();
-				return false;
-			});
-		}
+        appColors();
 
+        checklistBehaviour();
 
-		// Set notes' protection password
-		Preference password = findPreference("settings_password");
-		if (password != null) {
-			password.setOnPreferenceClickListener(preference -> {
-				Intent passwordIntent = new Intent(getActivity(), PasswordActivity.class);
-				startActivity(passwordIntent);
-				return false;
-			});
-		}
+        widgetColors();
 
+        notificationSnoozeDelay();
 
-		// Use password to grant application access
-		final CheckBoxPreference passwordAccess = (CheckBoxPreference) findPreference("settings_password_access");
-		if (passwordAccess != null) {
-			if (prefs.getString(Constants.PREF_PASSWORD, null) == null) {
-				passwordAccess.setEnabled(false);
-				passwordAccess.setChecked(false);
-			} else {
-				passwordAccess.setEnabled(true);
-			}
-			passwordAccess.setOnPreferenceChangeListener((preference, newValue) -> {
-				BaseActivity.requestPassword(getActivity(), passwordConfirmed -> {
-					if (passwordConfirmed) {
-						passwordAccess.setChecked((Boolean) newValue);
-					}
-				});
-				return false;
-			});
-		}
+        changelog();
 
+        resetSettings();
 
-		// Languages
-		ListPreference lang = (ListPreference) findPreference("settings_language");
-		if (lang != null) {
-			String languageName = getResources().getConfiguration().locale.getDisplayName();
-			lang.setSummary(languageName.substring(0, 1).toUpperCase(getResources().getConfiguration().locale)
-					+ languageName.substring(1, languageName.length()));
-			lang.setOnPreferenceChangeListener((preference, value) -> {
-				OmniNotes.updateLanguage(getActivity(), value.toString());
-				MiscUtils.restartApp(getActivity().getApplicationContext(), MainActivity.class);
-				return false;
-			});
-		}
+        showAppTour();
 
-
-		// Text size
-		final ListPreference textSize = (ListPreference) findPreference("settings_text_size");
-		if (textSize != null) {
-			int textSizeIndex = textSize.findIndexOfValue(prefs.getString("settings_text_size", "default"));
-			String textSizeString = getResources().getStringArray(R.array.text_size)[textSizeIndex];
-			textSize.setSummary(textSizeString);
-			textSize.setOnPreferenceChangeListener((preference, newValue) -> {
-				int textSizeIndex1 = textSize.findIndexOfValue(newValue.toString());
-				String checklistString = getResources().getStringArray(R.array.text_size)[textSizeIndex1];
-				textSize.setSummary(checklistString);
-				prefs.edit().putString("settings_text_size", newValue.toString()).commit();
-				textSize.setValueIndex(textSizeIndex1);
-				return false;
-			});
-		}
-
-
-		// Application's colors
-		final ListPreference colorsApp = (ListPreference) findPreference("settings_colors_app");
-		if (colorsApp != null) {
-			int colorsAppIndex = colorsApp.findIndexOfValue(prefs.getString("settings_colors_app",
-					Constants.PREF_COLORS_APP_DEFAULT));
-			String colorsAppString = getResources().getStringArray(R.array.colors_app)[colorsAppIndex];
-			colorsApp.setSummary(colorsAppString);
-			colorsApp.setOnPreferenceChangeListener((preference, newValue) -> {
-				int colorsAppIndex1 = colorsApp.findIndexOfValue(newValue.toString());
-				String colorsAppString1 = getResources().getStringArray(R.array.colors_app)[colorsAppIndex1];
-				colorsApp.setSummary(colorsAppString1);
-				prefs.edit().putString("settings_colors_app", newValue.toString()).commit();
-				colorsApp.setValueIndex(colorsAppIndex1);
-				return false;
-			});
-		}
-
-
-		// Checklists
-		final ListPreference checklist = (ListPreference) findPreference("settings_checked_items_behavior");
-		if (checklist != null) {
-			int checklistIndex = checklist.findIndexOfValue(prefs.getString("settings_checked_items_behavior", "0"));
-			String checklistString = getResources().getStringArray(R.array.checked_items_behavior)[checklistIndex];
-			checklist.setSummary(checklistString);
-			checklist.setOnPreferenceChangeListener((preference, newValue) -> {
-				int checklistIndex1 = checklist.findIndexOfValue(newValue.toString());
-				String checklistString1 = getResources().getStringArray(R.array.checked_items_behavior)
-						[checklistIndex1];
-				checklist.setSummary(checklistString1);
-				prefs.edit().putString("settings_checked_items_behavior", newValue.toString()).commit();
-				checklist.setValueIndex(checklistIndex1);
-				return false;
-			});
-		}
-
-
-		// Widget's colors
-		final ListPreference colorsWidget = (ListPreference) findPreference("settings_colors_widget");
-		if (colorsWidget != null) {
-			int colorsWidgetIndex = colorsWidget.findIndexOfValue(prefs.getString("settings_colors_widget",
-					Constants.PREF_COLORS_APP_DEFAULT));
-			String colorsWidgetString = getResources().getStringArray(R.array.colors_widget)[colorsWidgetIndex];
-			colorsWidget.setSummary(colorsWidgetString);
-			colorsWidget.setOnPreferenceChangeListener((preference, newValue) -> {
-				int colorsWidgetIndex1 = colorsWidget.findIndexOfValue(newValue.toString());
-				String colorsWidgetString1 = getResources().getStringArray(R.array.colors_widget)[colorsWidgetIndex1];
-				colorsWidget.setSummary(colorsWidgetString1);
-				prefs.edit().putString("settings_colors_widget", newValue.toString()).commit();
-				colorsWidget.setValueIndex(colorsWidgetIndex1);
-				return false;
-			});
-		}
-
-
-		// Notification snooze delay
-		final EditTextPreference snoozeDelay = (EditTextPreference) findPreference
-				("settings_notification_snooze_delay");
-		if (snoozeDelay != null) {
-			String snooze = prefs.getString("settings_notification_snooze_delay", Constants.PREF_SNOOZE_DEFAULT);
-			snooze = TextUtils.isEmpty(snooze) ? Constants.PREF_SNOOZE_DEFAULT : snooze;
-			snoozeDelay.setSummary(String.valueOf(snooze) + " " + getString(R.string.minutes));
-			snoozeDelay.setOnPreferenceChangeListener((preference, newValue) -> {
-				String snoozeUpdated = TextUtils.isEmpty(String.valueOf(newValue)) ? Constants
-						.PREF_SNOOZE_DEFAULT : String.valueOf(newValue);
-				snoozeDelay.setSummary(snoozeUpdated + " " + getString(R.string.minutes));
-				prefs.edit().putString("settings_notification_snooze_delay", snoozeUpdated).apply();
-				return false;
-			});
-		}
-
-
-		// Changelog
-		Preference changelog = findPreference("settings_changelog");
-		if (changelog != null) {
-			changelog.setOnPreferenceClickListener(arg0 -> {
-
-				AnalyticsHelper.trackEvent(AnalyticsHelper.CATEGORIES.SETTING, "settings_changelog");
-
-				new MaterialDialog.Builder(activity)
-						.customView(R.layout.activity_changelog, false)
-						.positiveText(R.string.ok)
-						.build().show();
-				return false;
-			});
-			// Retrieval of installed app version to write it as summary
-			PackageInfo pInfo;
-			String versionString = "";
-			try {
-				pInfo = getActivity().getPackageManager().getPackageInfo(getActivity().getPackageName(), 0);
-				versionString = pInfo.versionName;
-			} catch (NameNotFoundException e) {
-				Log.e(Constants.TAG, "Error retrieving version", e);
-			}
-			changelog.setSummary(versionString);
-		}
-
-
-		// Settings reset
-		Preference resetData = findPreference("reset_all_data");
-		if (resetData != null) {
-			resetData.setOnPreferenceClickListener(arg0 -> {
-
-				new MaterialDialog.Builder(activity)
-						.content(R.string.reset_all_data_confirmation)
-						.positiveText(R.string.confirm)
-						.callback(new MaterialDialog.ButtonCallback() {
-							@Override
-							public void onPositive(MaterialDialog dialog) {
-								prefs.edit().clear().commit();
-								File db = getActivity().getDatabasePath(Constants.DATABASE_NAME);
-								StorageHelper.delete(getActivity(), db.getAbsolutePath());
-								File attachmentsDir = StorageHelper.getAttachmentDir(getActivity());
-								StorageHelper.delete(getActivity(), attachmentsDir.getAbsolutePath());
-								File cacheDir = StorageHelper.getCacheDir(getActivity());
-								StorageHelper.delete(getActivity(), cacheDir.getAbsolutePath());
-								MiscUtils.restartApp(getActivity().getApplicationContext(), MainActivity.class);
-							}
-						})
-						.build().show();
-
-				return false;
-			});
-		}
-
-
-		// Instructions
-		Preference instructions = findPreference("settings_tour_show_again");
-		if (instructions != null) {
-			instructions.setOnPreferenceClickListener(arg0 -> {
-				new MaterialDialog.Builder(getActivity())
-						.content(getString(R.string.settings_tour_show_again_summary) + "?")
-						.positiveText(R.string.confirm)
-						.callback(new MaterialDialog.ButtonCallback() {
-							@Override
-							public void onPositive(MaterialDialog materialDialog) {
-
-								AnalyticsHelper.trackEvent(AnalyticsHelper.CATEGORIES.SETTING, "settings_tour_show_again");
-
-								prefs.edit().putBoolean(Constants.PREF_TOUR_COMPLETE, false).commit();
-								MiscUtils.restartApp(getActivity().getApplicationContext(), MainActivity.class);
-							}
-						}).build().show();
-				return false;
-			});
-		}
-
-
-		// Donations
-//        Preference donation = findPreference("settings_donation");
-//        if (donation != null) {
-//            donation.setOnPreferenceClickListener(new OnPreferenceClickListener() {
-//                @Override
-//                public boolean onPreferenceClick(Preference preference) {
-//                    AlertDialog.Builder alertDialogBuilder = new AlertDialog.Builder(getActivity());
-//
-//                    ArrayList<ImageAndTextItem> options = new ArrayList<ImageAndTextItem>();
-//                    options.add(new ImageAndTextItem(R.drawable.ic_paypal, getString(R.string.paypal)));
-//                    options.add(new ImageAndTextItem(R.drawable.ic_bitcoin, getString(R.string.bitcoin)));
-//
-//                    alertDialogBuilder
-//                            .setAdapter(new ImageAndTextAdapter(getActivity(), options),
-//                                    new DialogInterface.OnClickListener() {
-//                                        @Override
-//                                        public void onClick(DialogInterface dialog, int which) {
-//                                            switch (which) {
-//                                                case 0:
-//                                                    Intent intentPaypal = new Intent(Intent.ACTION_VIEW);
-//                                                    intentPaypal.setData(Uri.parse(getString(R.string.paypal_url)));
-//                                                    startActivity(intentPaypal);
-//                                                    break;
-//                                                case 1:
-//                                                    Intent intentBitcoin = new Intent(Intent.ACTION_VIEW);
-//                                                    intentBitcoin.setData(Uri.parse(getString(R.string.bitcoin_url)));
-//                                                    startActivity(intentBitcoin);
-//                                                    break;
-//                                            }
-//                                        }
-//                                    });
-//
-//
-//                    // create alert dialog
-//                    AlertDialog alertDialog = alertDialogBuilder.create();
-//                    // show it
-//                    alertDialog.show();
-//                    return false;
-//                }
-//            });
-//        }
+        donation();
 	}
-
 
     public void exportNotes() {
 
@@ -532,7 +220,6 @@ public class SettingsFragment extends PreferenceFragment {
             });
         }
     }
-
 
     public void importNotes() {
 
@@ -637,6 +324,360 @@ public class SettingsFragment extends PreferenceFragment {
                 return false;
             });
         }
+    }
+
+    public void importFromSpringpad() {
+        // Import notes from Springpad export zip file
+        Preference importFromSpringpad = findPreference("settings_import_from_springpad");
+        if (importFromSpringpad != null) {
+            importFromSpringpad.setOnPreferenceClickListener(arg0 -> {
+                Intent intent;
+                intent = new Intent(Intent.ACTION_GET_CONTENT);
+                intent.addCategory(Intent.CATEGORY_OPENABLE);
+                intent.setType("application/zip");
+                if (!IntentChecker.isAvailable(getActivity(), intent, null)) {
+                    Toast.makeText(getActivity(), R.string.feature_not_available_on_this_device,
+                            Toast.LENGTH_SHORT).show();
+                    return false;
+                }
+                startActivityForResult(intent, SPRINGPAD_IMPORT);
+                return false;
+            });
+        }
+    }
+
+    public void syncWithDrive() {
+//		Preference syncWithDrive = findPreference("settings_backup_drive");
+//		importFromSpringpad.setOnPreferenceClickListener(new OnPreferenceClickListener() {
+//			@Override
+//			public boolean onPreferenceClick(Preference arg0) {
+//				Intent intent;
+//				intent = new Intent(Intent.ACTION_GET_CONTENT);
+//				intent.addCategory(Intent.CATEGORY_OPENABLE);
+//				intent.setType("application/zip");
+//				if (!IntentChecker.isAvailable(getActivity(), intent, null)) {
+//					Crouton.makeText(getActivity(), R.string.feature_not_available_on_this_device,
+// ONStyle.ALERT).show();
+//					return false;
+//				}
+//				startActivityForResult(intent, SPRINGPAD_IMPORT);
+//				return false;
+//			}
+//		});
+    }
+
+    public void swipeToTrash() {
+        final CheckBoxPreference swipeToTrash = (CheckBoxPreference) findPreference("settings_swipe_to_trash");
+        if (swipeToTrash != null) {
+            if (prefs.getBoolean("settings_swipe_to_trash", false)) {
+                swipeToTrash.setChecked(true);
+                swipeToTrash.setSummary(getResources().getString(R.string.settings_swipe_to_trash_summary_2));
+            } else {
+                swipeToTrash.setSummary(getResources().getString(R.string.settings_swipe_to_trash_summary_1));
+                swipeToTrash.setChecked(false);
+            }
+            swipeToTrash.setOnPreferenceChangeListener((preference, newValue) -> {
+                if ((Boolean) newValue) {
+                    swipeToTrash.setSummary(getResources().getString(R.string.settings_swipe_to_trash_summary_2));
+                } else {
+                    swipeToTrash.setSummary(getResources().getString(R.string.settings_swipe_to_trash_summary_1));
+                }
+                swipeToTrash.setChecked((Boolean) newValue);
+                return false;
+            });
+        }
+    }
+
+    public void showUncategorizedNotes() {
+        final CheckBoxPreference showUncategorized = (CheckBoxPreference) findPreference(Constants
+                .PREF_SHOW_UNCATEGORIZED);
+        if (showUncategorized != null) {
+            showUncategorized.setOnPreferenceChangeListener((preference, newValue) -> {
+                showUncategorized.setChecked((Boolean) newValue);
+                return false;
+            });
+        }
+    }
+
+    public void autoAddLocation(){
+        final CheckBoxPreference autoLocation = (CheckBoxPreference) findPreference(Constants.PREF_AUTO_LOCATION);
+        if (autoLocation != null) {
+            autoLocation.setOnPreferenceChangeListener((preference, newValue) -> {
+                autoLocation.setChecked((Boolean) newValue);
+                return false;
+            });
+        }
+    }
+
+    public void maxVideoSize() {
+        final EditTextPreference maxVideoSize = (EditTextPreference) findPreference("settings_max_video_size");
+        if (maxVideoSize != null) {
+            String maxVideoSizeValue = prefs.getString("settings_max_video_size", getString(R.string.not_set));
+            maxVideoSize.setSummary(getString(R.string.settings_max_video_size_summary) + ": " + String.valueOf
+                    (maxVideoSizeValue));
+            maxVideoSize.setOnPreferenceChangeListener((preference, newValue) -> {
+                maxVideoSize.setSummary(getString(R.string.settings_max_video_size_summary) + ": " + String
+                        .valueOf(newValue));
+                prefs.edit().putString("settings_max_video_size", newValue.toString()).commit();
+                return false;
+            });
+        }
+    }
+
+    public void setNotesProtectionPassword() {
+        Preference password = findPreference("settings_password");
+        if (password != null) {
+            password.setOnPreferenceClickListener(preference -> {
+                Intent passwordIntent = new Intent(getActivity(), PasswordActivity.class);
+                startActivity(passwordIntent);
+                return false;
+            });
+        }
+    }
+
+    public void grantApplicationAccess() {
+        final CheckBoxPreference passwordAccess = (CheckBoxPreference) findPreference("settings_password_access");
+        if (passwordAccess != null) {
+            if (prefs.getString(Constants.PREF_PASSWORD, null) == null) {
+                passwordAccess.setEnabled(false);
+                passwordAccess.setChecked(false);
+            } else {
+                passwordAccess.setEnabled(true);
+            }
+            passwordAccess.setOnPreferenceChangeListener((preference, newValue) -> {
+                BaseActivity.requestPassword(getActivity(), passwordConfirmed -> {
+                    if (passwordConfirmed) {
+                        passwordAccess.setChecked((Boolean) newValue);
+                    }
+                });
+                return false;
+            });
+        }
+    }
+
+    public void language() {
+        ListPreference lang = (ListPreference) findPreference("settings_language");
+        if (lang != null) {
+            String languageName = getResources().getConfiguration().locale.getDisplayName();
+            lang.setSummary(languageName.substring(0, 1).toUpperCase(getResources().getConfiguration().locale)
+                    + languageName.substring(1, languageName.length()));
+            lang.setOnPreferenceChangeListener((preference, value) -> {
+                OmniNotes.updateLanguage(getActivity(), value.toString());
+                MiscUtils.restartApp(getActivity().getApplicationContext(), MainActivity.class);
+                return false;
+            });
+        }
+    }
+
+    public void textSize() {
+        final ListPreference textSize = (ListPreference) findPreference("settings_text_size");
+        if (textSize != null) {
+            int textSizeIndex = textSize.findIndexOfValue(prefs.getString("settings_text_size", "default"));
+            String textSizeString = getResources().getStringArray(R.array.text_size)[textSizeIndex];
+            textSize.setSummary(textSizeString);
+            textSize.setOnPreferenceChangeListener((preference, newValue) -> {
+                int textSizeIndex1 = textSize.findIndexOfValue(newValue.toString());
+                String checklistString = getResources().getStringArray(R.array.text_size)[textSizeIndex1];
+                textSize.setSummary(checklistString);
+                prefs.edit().putString("settings_text_size", newValue.toString()).commit();
+                textSize.setValueIndex(textSizeIndex1);
+                return false;
+            });
+        }
+
+    }
+
+    public void appColors() {
+        final ListPreference colorsApp = (ListPreference) findPreference("settings_colors_app");
+        if (colorsApp != null) {
+            int colorsAppIndex = colorsApp.findIndexOfValue(prefs.getString("settings_colors_app",
+                    Constants.PREF_COLORS_APP_DEFAULT));
+            String colorsAppString = getResources().getStringArray(R.array.colors_app)[colorsAppIndex];
+            colorsApp.setSummary(colorsAppString);
+            colorsApp.setOnPreferenceChangeListener((preference, newValue) -> {
+                int colorsAppIndex1 = colorsApp.findIndexOfValue(newValue.toString());
+                String colorsAppString1 = getResources().getStringArray(R.array.colors_app)[colorsAppIndex1];
+                colorsApp.setSummary(colorsAppString1);
+                prefs.edit().putString("settings_colors_app", newValue.toString()).commit();
+                colorsApp.setValueIndex(colorsAppIndex1);
+                return false;
+            });
+        }
+    }
+
+    public void checklistBehaviour() {
+        final ListPreference checklist = (ListPreference) findPreference("settings_checked_items_behavior");
+        if (checklist != null) {
+            int checklistIndex = checklist.findIndexOfValue(prefs.getString("settings_checked_items_behavior", "0"));
+            String checklistString = getResources().getStringArray(R.array.checked_items_behavior)[checklistIndex];
+            checklist.setSummary(checklistString);
+            checklist.setOnPreferenceChangeListener((preference, newValue) -> {
+                int checklistIndex1 = checklist.findIndexOfValue(newValue.toString());
+                String checklistString1 = getResources().getStringArray(R.array.checked_items_behavior)
+                        [checklistIndex1];
+                checklist.setSummary(checklistString1);
+                prefs.edit().putString("settings_checked_items_behavior", newValue.toString()).commit();
+                checklist.setValueIndex(checklistIndex1);
+                return false;
+            });
+        }
+    }
+
+    public void widgetColors() {
+        final ListPreference colorsWidget = (ListPreference) findPreference("settings_colors_widget");
+        if (colorsWidget != null) {
+            int colorsWidgetIndex = colorsWidget.findIndexOfValue(prefs.getString("settings_colors_widget",
+                    Constants.PREF_COLORS_APP_DEFAULT));
+            String colorsWidgetString = getResources().getStringArray(R.array.colors_widget)[colorsWidgetIndex];
+            colorsWidget.setSummary(colorsWidgetString);
+            colorsWidget.setOnPreferenceChangeListener((preference, newValue) -> {
+                int colorsWidgetIndex1 = colorsWidget.findIndexOfValue(newValue.toString());
+                String colorsWidgetString1 = getResources().getStringArray(R.array.colors_widget)[colorsWidgetIndex1];
+                colorsWidget.setSummary(colorsWidgetString1);
+                prefs.edit().putString("settings_colors_widget", newValue.toString()).commit();
+                colorsWidget.setValueIndex(colorsWidgetIndex1);
+                return false;
+            });
+        }
+    }
+
+    public void notificationSnoozeDelay() {
+        final EditTextPreference snoozeDelay = (EditTextPreference) findPreference
+                ("settings_notification_snooze_delay");
+        if (snoozeDelay != null) {
+            String snooze = prefs.getString("settings_notification_snooze_delay", Constants.PREF_SNOOZE_DEFAULT);
+            snooze = TextUtils.isEmpty(snooze) ? Constants.PREF_SNOOZE_DEFAULT : snooze;
+            snoozeDelay.setSummary(String.valueOf(snooze) + " " + getString(R.string.minutes));
+            snoozeDelay.setOnPreferenceChangeListener((preference, newValue) -> {
+                String snoozeUpdated = TextUtils.isEmpty(String.valueOf(newValue)) ? Constants
+                        .PREF_SNOOZE_DEFAULT : String.valueOf(newValue);
+                snoozeDelay.setSummary(snoozeUpdated + " " + getString(R.string.minutes));
+                prefs.edit().putString("settings_notification_snooze_delay", snoozeUpdated).apply();
+                return false;
+            });
+        }
+
+    }
+
+    public void changelog() {
+        Preference changelog = findPreference("settings_changelog");
+        if (changelog != null) {
+            changelog.setOnPreferenceClickListener(arg0 -> {
+
+                AnalyticsHelper.trackEvent(AnalyticsHelper.CATEGORIES.SETTING, "settings_changelog");
+
+                new MaterialDialog.Builder(activity)
+                        .customView(R.layout.activity_changelog, false)
+                        .positiveText(R.string.ok)
+                        .build().show();
+                return false;
+            });
+            // Retrieval of installed app version to write it as summary
+            PackageInfo pInfo;
+            String versionString = "";
+            try {
+                pInfo = getActivity().getPackageManager().getPackageInfo(getActivity().getPackageName(), 0);
+                versionString = pInfo.versionName;
+            } catch (NameNotFoundException e) {
+                Log.e(Constants.TAG, "Error retrieving version", e);
+            }
+            changelog.setSummary(versionString);
+        }
+
+    }
+
+    public void resetSettings() {
+        Preference resetData = findPreference("reset_all_data");
+        if (resetData != null) {
+            resetData.setOnPreferenceClickListener(arg0 -> {
+
+                new MaterialDialog.Builder(activity)
+                        .content(R.string.reset_all_data_confirmation)
+                        .positiveText(R.string.confirm)
+                        .callback(new MaterialDialog.ButtonCallback() {
+                            @Override
+                            public void onPositive(MaterialDialog dialog) {
+                                prefs.edit().clear().commit();
+                                File db = getActivity().getDatabasePath(Constants.DATABASE_NAME);
+                                StorageHelper.delete(getActivity(), db.getAbsolutePath());
+                                File attachmentsDir = StorageHelper.getAttachmentDir(getActivity());
+                                StorageHelper.delete(getActivity(), attachmentsDir.getAbsolutePath());
+                                File cacheDir = StorageHelper.getCacheDir(getActivity());
+                                StorageHelper.delete(getActivity(), cacheDir.getAbsolutePath());
+                                MiscUtils.restartApp(getActivity().getApplicationContext(), MainActivity.class);
+                            }
+                        })
+                        .build().show();
+
+                return false;
+            });
+        }
+
+    }
+
+    public void showAppTour() {
+        Preference instructions = findPreference("settings_tour_show_again");
+        if (instructions != null) {
+            instructions.setOnPreferenceClickListener(arg0 -> {
+                new MaterialDialog.Builder(getActivity())
+                        .content(getString(R.string.settings_tour_show_again_summary) + "?")
+                        .positiveText(R.string.confirm)
+                        .callback(new MaterialDialog.ButtonCallback() {
+                            @Override
+                            public void onPositive(MaterialDialog materialDialog) {
+
+                                AnalyticsHelper.trackEvent(AnalyticsHelper.CATEGORIES.SETTING, "settings_tour_show_again");
+
+                                prefs.edit().putBoolean(Constants.PREF_TOUR_COMPLETE, false).commit();
+                                MiscUtils.restartApp(getActivity().getApplicationContext(), MainActivity.class);
+                            }
+                        }).build().show();
+                return false;
+            });
+        }
+    }
+
+    public void donation() {
+//        Preference donation = findPreference("settings_donation");
+//        if (donation != null) {
+//            donation.setOnPreferenceClickListener(new OnPreferenceClickListener() {
+//                @Override
+//                public boolean onPreferenceClick(Preference preference) {
+//                    AlertDialog.Builder alertDialogBuilder = new AlertDialog.Builder(getActivity());
+//
+//                    ArrayList<ImageAndTextItem> options = new ArrayList<ImageAndTextItem>();
+//                    options.add(new ImageAndTextItem(R.drawable.ic_paypal, getString(R.string.paypal)));
+//                    options.add(new ImageAndTextItem(R.drawable.ic_bitcoin, getString(R.string.bitcoin)));
+//
+//                    alertDialogBuilder
+//                            .setAdapter(new ImageAndTextAdapter(getActivity(), options),
+//                                    new DialogInterface.OnClickListener() {
+//                                        @Override
+//                                        public void onClick(DialogInterface dialog, int which) {
+//                                            switch (which) {
+//                                                case 0:
+//                                                    Intent intentPaypal = new Intent(Intent.ACTION_VIEW);
+//                                                    intentPaypal.setData(Uri.parse(getString(R.string.paypal_url)));
+//                                                    startActivity(intentPaypal);
+//                                                    break;
+//                                                case 1:
+//                                                    Intent intentBitcoin = new Intent(Intent.ACTION_VIEW);
+//                                                    intentBitcoin.setData(Uri.parse(getString(R.string.bitcoin_url)));
+//                                                    startActivity(intentBitcoin);
+//                                                    break;
+//                                            }
+//                                        }
+//                                    });
+//
+//
+//                    // create alert dialog
+//                    AlertDialog alertDialog = alertDialogBuilder.create();
+//                    // show it
+//                    alertDialog.show();
+//                    return false;
+//                }
+//            });
+//        }
     }
 
 

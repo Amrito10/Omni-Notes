@@ -164,7 +164,7 @@ public class SettingsFragment extends PreferenceFragment {
         donation();
 	}
 
-    public void exportNotes() {
+    void exportNotes() {
 
         Preference export = findPreference("settings_export_data");
         if (export != null) {
@@ -221,7 +221,7 @@ public class SettingsFragment extends PreferenceFragment {
         }
     }
 
-    public void importNotes() {
+    void importNotes() {
 
         Preference importData = findPreference("settings_import_data");
         if (importData != null) {
@@ -326,7 +326,7 @@ public class SettingsFragment extends PreferenceFragment {
         }
     }
 
-    public void importFromSpringpad() {
+    void importFromSpringpad() {
         // Import notes from Springpad export zip file
         Preference importFromSpringpad = findPreference("settings_import_from_springpad");
         if (importFromSpringpad != null) {
@@ -346,7 +346,7 @@ public class SettingsFragment extends PreferenceFragment {
         }
     }
 
-    public void syncWithDrive() {
+    void syncWithDrive() {
 //		Preference syncWithDrive = findPreference("settings_backup_drive");
 //		importFromSpringpad.setOnPreferenceClickListener(new OnPreferenceClickListener() {
 //			@Override
@@ -366,7 +366,7 @@ public class SettingsFragment extends PreferenceFragment {
 //		});
     }
 
-    public void swipeToTrash() {
+    void swipeToTrash() {
         final CheckBoxPreference swipeToTrash = (CheckBoxPreference) findPreference("settings_swipe_to_trash");
         if (swipeToTrash != null) {
             if (prefs.getBoolean("settings_swipe_to_trash", false)) {
@@ -388,7 +388,7 @@ public class SettingsFragment extends PreferenceFragment {
         }
     }
 
-    public void showUncategorizedNotes() {
+    void showUncategorizedNotes() {
         final CheckBoxPreference showUncategorized = (CheckBoxPreference) findPreference(Constants
                 .PREF_SHOW_UNCATEGORIZED);
         if (showUncategorized != null) {
@@ -399,7 +399,7 @@ public class SettingsFragment extends PreferenceFragment {
         }
     }
 
-    public void autoAddLocation(){
+    void autoAddLocation(){
         final CheckBoxPreference autoLocation = (CheckBoxPreference) findPreference(Constants.PREF_AUTO_LOCATION);
         if (autoLocation != null) {
             autoLocation.setOnPreferenceChangeListener((preference, newValue) -> {
@@ -409,7 +409,7 @@ public class SettingsFragment extends PreferenceFragment {
         }
     }
 
-    public void maxVideoSize() {
+    void maxVideoSize() {
         final EditTextPreference maxVideoSize = (EditTextPreference) findPreference("settings_max_video_size");
         if (maxVideoSize != null) {
             String maxVideoSizeValue = prefs.getString("settings_max_video_size", getString(R.string.not_set));
@@ -424,7 +424,7 @@ public class SettingsFragment extends PreferenceFragment {
         }
     }
 
-    public void setNotesProtectionPassword() {
+    void setNotesProtectionPassword() {
         Preference password = findPreference("settings_password");
         if (password != null) {
             password.setOnPreferenceClickListener(preference -> {
@@ -435,7 +435,7 @@ public class SettingsFragment extends PreferenceFragment {
         }
     }
 
-    public void grantApplicationAccess() {
+    void grantApplicationAccess() {
         final CheckBoxPreference passwordAccess = (CheckBoxPreference) findPreference("settings_password_access");
         if (passwordAccess != null) {
             if (prefs.getString(Constants.PREF_PASSWORD, null) == null) {
@@ -455,7 +455,7 @@ public class SettingsFragment extends PreferenceFragment {
         }
     }
 
-    public void language() {
+    void language() {
         ListPreference lang = (ListPreference) findPreference("settings_language");
         if (lang != null) {
             String languageName = getResources().getConfiguration().locale.getDisplayName();
@@ -469,7 +469,7 @@ public class SettingsFragment extends PreferenceFragment {
         }
     }
 
-    public void textSize() {
+    void textSize() {
         final ListPreference textSize = (ListPreference) findPreference("settings_text_size");
         if (textSize != null) {
             int textSizeIndex = textSize.findIndexOfValue(prefs.getString("settings_text_size", "default"));
@@ -487,7 +487,7 @@ public class SettingsFragment extends PreferenceFragment {
 
     }
 
-    public void appColors() {
+    void appColors() {
         final ListPreference colorsApp = (ListPreference) findPreference("settings_colors_app");
         if (colorsApp != null) {
             int colorsAppIndex = colorsApp.findIndexOfValue(prefs.getString("settings_colors_app",
@@ -505,7 +505,7 @@ public class SettingsFragment extends PreferenceFragment {
         }
     }
 
-    public void checklistBehaviour() {
+    void checklistBehaviour() {
         final ListPreference checklist = (ListPreference) findPreference("settings_checked_items_behavior");
         if (checklist != null) {
             int checklistIndex = checklist.findIndexOfValue(prefs.getString("settings_checked_items_behavior", "0"));
@@ -523,7 +523,7 @@ public class SettingsFragment extends PreferenceFragment {
         }
     }
 
-    public void widgetColors() {
+    void widgetColors() {
         final ListPreference colorsWidget = (ListPreference) findPreference("settings_colors_widget");
         if (colorsWidget != null) {
             int colorsWidgetIndex = colorsWidget.findIndexOfValue(prefs.getString("settings_colors_widget",
@@ -541,7 +541,7 @@ public class SettingsFragment extends PreferenceFragment {
         }
     }
 
-    public void notificationSnoozeDelay() {
+    void notificationSnoozeDelay() {
         final EditTextPreference snoozeDelay = (EditTextPreference) findPreference
                 ("settings_notification_snooze_delay");
         if (snoozeDelay != null) {
@@ -559,7 +559,7 @@ public class SettingsFragment extends PreferenceFragment {
 
     }
 
-    public void changelog() {
+    void changelog() {
         Preference changelog = findPreference("settings_changelog");
         if (changelog != null) {
             changelog.setOnPreferenceClickListener(arg0 -> {
@@ -586,7 +586,29 @@ public class SettingsFragment extends PreferenceFragment {
 
     }
 
-    public void resetSettings() {
+    void showAppTour() {
+        Preference instructions = findPreference("settings_tour_show_again");
+        if (instructions != null) {
+            instructions.setOnPreferenceClickListener(arg0 -> {
+                new MaterialDialog.Builder(getActivity())
+                        .content(getString(R.string.settings_tour_show_again_summary) + "?")
+                        .positiveText(R.string.confirm)
+                        .callback(new MaterialDialog.ButtonCallback() {
+                            @Override
+                            public void onPositive(MaterialDialog materialDialog) {
+
+                                AnalyticsHelper.trackEvent(AnalyticsHelper.CATEGORIES.SETTING, "settings_tour_show_again");
+
+                                prefs.edit().putBoolean(Constants.PREF_TOUR_COMPLETE, false).commit();
+                                MiscUtils.restartApp(getActivity().getApplicationContext(), MainActivity.class);
+                            }
+                        }).build().show();
+                return false;
+            });
+        }
+    }
+
+    void resetSettings() {
         Preference resetData = findPreference("reset_all_data");
         if (resetData != null) {
             resetData.setOnPreferenceClickListener(arg0 -> {
@@ -615,29 +637,7 @@ public class SettingsFragment extends PreferenceFragment {
 
     }
 
-    public void showAppTour() {
-        Preference instructions = findPreference("settings_tour_show_again");
-        if (instructions != null) {
-            instructions.setOnPreferenceClickListener(arg0 -> {
-                new MaterialDialog.Builder(getActivity())
-                        .content(getString(R.string.settings_tour_show_again_summary) + "?")
-                        .positiveText(R.string.confirm)
-                        .callback(new MaterialDialog.ButtonCallback() {
-                            @Override
-                            public void onPositive(MaterialDialog materialDialog) {
-
-                                AnalyticsHelper.trackEvent(AnalyticsHelper.CATEGORIES.SETTING, "settings_tour_show_again");
-
-                                prefs.edit().putBoolean(Constants.PREF_TOUR_COMPLETE, false).commit();
-                                MiscUtils.restartApp(getActivity().getApplicationContext(), MainActivity.class);
-                            }
-                        }).build().show();
-                return false;
-            });
-        }
-    }
-
-    public void donation() {
+    void donation() {
 //        Preference donation = findPreference("settings_donation");
 //        if (donation != null) {
 //            donation.setOnPreferenceClickListener(new OnPreferenceClickListener() {

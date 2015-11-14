@@ -30,7 +30,7 @@
         <item name="actionBarPopupTheme">@style/ThemeOverlay.AppCompat.Light</item>
     </style>
 
-    <style name="OmniNotesTheme.ApiSpec"></style>
+    <style name="OmniNotesTheme.ApiSpec"/>
 
     <style name="OmniNotesTheme.ApiSpec.Branded">
         <item name="android:windowBackground">@drawable/branded_background</item>
@@ -47,7 +47,7 @@
         <item name="background">@color/black_overlay</item>
     </style>
 
-    <style name="OmniNotesFullscreenTheme.ApiSpec"></style>
+    <style name="OmniNotesFullscreenTheme.ApiSpec"/>
 
     <style name="OmniNotesTheme.NoDisplay">
         <item name="android:windowBackground">@null</item>
@@ -177,6 +177,11 @@
     <style name="crouton_text">
         <item name="android:textAllCaps">true</item>
         <item name="android:textStyle">bold</item>
+    </style>
+
+    <style name="fab_labels_style">
+        <item name="android:background">@drawable/fab_label_background</item>
+        <item name="android:textColor">@color/white</item>
     </style>
 
 </resources>

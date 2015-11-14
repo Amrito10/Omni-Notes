@@ -107,7 +107,7 @@ public class GeocodeHelper implements LocationListener {
 		SmartLocation.LocationControl bod = SmartLocation.with(context).location(new
 				LocationGooglePlayServicesWithFallbackProvider(context)).config(LocationParams.NAVIGATION).oneFix();
 
-		Observable<Location> locations = ObservableFactory.from(bod).timeout(2, TimeUnit.SECONDS);
+		Observable<Location> locations = ObservableFactory.from(bod).timeout(4, TimeUnit.SECONDS);
 		locations.subscribe(new Subscriber<Location>() {
 			@Override
 			public void onNext(Location location) {

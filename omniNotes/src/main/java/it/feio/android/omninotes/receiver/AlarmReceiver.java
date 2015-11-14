@@ -60,15 +60,13 @@ public class AlarmReceiver extends BroadcastReceiver {
 		Intent snoozeIntent = new Intent(mContext, SnoozeActivity.class);
 		snoozeIntent.setAction(Constants.ACTION_SNOOZE);
 		snoozeIntent.putExtra(Constants.INTENT_NOTE, (android.os.Parcelable) note);
-		snoozeIntent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-		PendingIntent piSnooze = PendingIntent.getActivity(mContext, 0, snoozeIntent,
+		PendingIntent piSnooze = PendingIntent.getActivity(mContext, getUniqueRequestCode(note), snoozeIntent,
 				PendingIntent.FLAG_UPDATE_CURRENT);
 
 		Intent postponeIntent = new Intent(mContext, SnoozeActivity.class);
 		postponeIntent.setAction(Constants.ACTION_POSTPONE);
 		postponeIntent.putExtra(Constants.INTENT_NOTE, (android.os.Parcelable) note);
-		snoozeIntent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-		PendingIntent piPostpone = PendingIntent.getActivity(mContext, 0, postponeIntent,
+		PendingIntent piPostpone = PendingIntent.getActivity(mContext, getUniqueRequestCode(note), postponeIntent,
 				PendingIntent.FLAG_UPDATE_CURRENT);
 
 		String snoozeDelay = mContext.getSharedPreferences(Constants.PREFS_NAME,
@@ -86,7 +84,7 @@ public class AlarmReceiver extends BroadcastReceiver {
 		intent.setAction(Constants.ACTION_NOTIFICATION_CLICK + Long.toString(System.currentTimeMillis()));
 
 		// Creates the PendingIntent
-		PendingIntent notifyIntent = PendingIntent.getActivity(mContext, 0, intent,
+		PendingIntent notifyIntent = PendingIntent.getActivity(mContext, getUniqueRequestCode(note), intent,
 				PendingIntent.FLAG_UPDATE_CURRENT);
 
 		NotificationsHelper notificationsHelper = new NotificationsHelper(mContext);
@@ -113,6 +111,7 @@ public class AlarmReceiver extends BroadcastReceiver {
 		notificationsHelper.show(note.get_id());
 	}
 
+<<<<<<< HEAD
     private void setAlarm(SharedPreferences prefs,NotificationsHelper notificationsHelper) {
         String ringtone = prefs.getString("settings_notification_ringtone", null);
         if (ringtone != null) notificationsHelper.setRingtone(ringtone);
@@ -121,4 +120,10 @@ public class AlarmReceiver extends BroadcastReceiver {
     private void setVibrate(SharedPreferences prefs, NotificationsHelper notificationsHelper) {
         if (prefs.getBoolean("settings_notification_vibration", true)) notificationsHelper.setVibration();
     }
+=======
+
+	private int getUniqueRequestCode(Note note) {
+		return note.get_id().intValue();
+	}
+>>>>>>> 69b7ebca181d653bbc2e1cc041d6698dfe36262d
 }

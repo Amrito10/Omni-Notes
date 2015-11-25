@@ -43,8 +43,8 @@ import android.view.inputmethod.EditorInfo;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.ListView;
-import butterknife.Bind;
 import butterknife.ButterKnife;
+import butterknife.InjectView;
 import com.afollestad.materialdialogs.MaterialDialog;
 import com.neopixl.pixlui.components.textview.TextView;
 import com.nhaarman.listviewanimations.itemmanipulation.DynamicListView;
@@ -81,18 +81,17 @@ public class ListFragment extends BaseFragment implements OnViewTouchedListener,
 
     private static final int REQUEST_CODE_CATEGORY = 1;
     private static final int REQUEST_CODE_CATEGORY_NOTES = 2;
-    private static final int REQUEST_CODE_ADD_ALARMS = 3;
 
-    @Bind(R.id.list_root) InterceptorLinearLayout listRoot;
-    @Bind(R.id.list) DynamicListView list;
-    @Bind(R.id.search_layout) View searchLayout;
-    @Bind(R.id.search_query) android.widget.TextView searchQueryView;
-    @Bind(R.id.search_cancel) ImageView searchCancel;
-    @Bind(R.id.empty_list) TextView empyListItem;
-    @Bind(R.id.expanded_image) ImageView expandedImageView;
-    @Bind(R.id.fab)  View fabView;
-    @Bind(R.id.undobar) View undoBarView;
-    @Bind(R.id.progress_wheel) ProgressWheel progress_wheel;
+    @InjectView(R.id.list_root) InterceptorLinearLayout listRoot;
+    @InjectView(R.id.list) DynamicListView list;
+    @InjectView(R.id.search_layout) View searchLayout;
+    @InjectView(R.id.search_query) android.widget.TextView searchQueryView;
+    @InjectView(R.id.search_cancel) ImageView searchCancel;
+    @InjectView(R.id.empty_list) TextView empyListItem;
+    @InjectView(R.id.expanded_image) ImageView expandedImageView;
+    @InjectView(R.id.fab)  View fabView;
+    @InjectView(R.id.undobar) View undoBarView;
+    @InjectView(R.id.progress_wheel) ProgressWheel progress_wheel;
 
     NoteViewHolder noteViewHolder;
 
@@ -170,7 +169,7 @@ public class ListFragment extends BaseFragment implements OnViewTouchedListener,
             keepActionMode = false;
         }
         View view = inflater.inflate(R.layout.fragment_list, container, false);
-        ButterKnife.bind(this, view);
+        ButterKnife.inject(this, view);
         return view;
     }
 
@@ -340,7 +339,7 @@ public class ListFragment extends BaseFragment implements OnViewTouchedListener,
             MenuInflater inflater = mode.getMenuInflater();
             inflater.inflate(R.menu.menu_list, menu);
             actionMode = mode;
-            fab.setAllowed(isFabAllowed());
+            fab.setAllowed(false);
             fab.hideFab();
             return true;
         }
@@ -367,7 +366,7 @@ public class ListFragment extends BaseFragment implements OnViewTouchedListener,
             listAdapter.clearSelectedItems();
             list.clearChoices();
 
-            fab.setAllowed(isFabAllowed(true));
+            fab.setAllowed(true);
             if (undoNotesList.size() == 0) {
                 fab.showFab();
             }
@@ -585,7 +584,6 @@ public class ListFragment extends BaseFragment implements OnViewTouchedListener,
                 menu.findItem(R.id.menu_unarchive).setVisible(showUnarchive);
 
             }
-            menu.findItem(R.id.menu_add_reminder).setVisible(true);
             menu.findItem(R.id.menu_category).setVisible(true);
             menu.findItem(R.id.menu_tags).setVisible(true);
             menu.findItem(R.id.menu_trash).setVisible(true);
@@ -695,9 +693,11 @@ public class ListFragment extends BaseFragment implements OnViewTouchedListener,
 		boolean filterArchivedInCategory = navigationCategory && prefs.getBoolean(Constants
 				.PREF_FILTER_ARCHIVED_IN_CATEGORIES + Navigation.getCategory(), false);
 
-        if (isFabAllowed()) {
+        if (!navigationReminders && !navigationArchive && !navigationTrash) {
             fab.setAllowed(true);
-            fab.showFab();
+            if (!drawerOpen) {
+                fab.showFab();
+            }
         } else {
             fab.setAllowed(false);
             fab.hideFab();
@@ -808,9 +808,6 @@ public class ListFragment extends BaseFragment implements OnViewTouchedListener,
                 case R.id.menu_select_all:
                     selectAllNotes();
                     break;
-                case R.id.menu_add_reminder:
-                    addReminders();
-                    break;
 //                case R.id.menu_synchronize:
 //                    synchronizeSelectedNotes();
 //                    break;
@@ -822,15 +819,6 @@ public class ListFragment extends BaseFragment implements OnViewTouchedListener,
         checkSortActionPerformed(item);
 
         return super.onOptionsItemSelected(item);
-    }
-
-
-    private void addReminders() {
-        Intent intent = new Intent(OmniNotes.getAppContext(), SnoozeActivity.class);
-        intent.setAction(Constants.ACTION_POSTPONE);
-        intent.putExtra(Constants.INTENT_NOTE, selectedNotes.toArray(new Note[selectedNotes.size()]));
-        intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-        startActivityForResult(intent, REQUEST_CODE_ADD_ALARMS);
     }
 
 
@@ -914,13 +902,6 @@ public class ListFragment extends BaseFragment implements OnViewTouchedListener,
                     Category tag = intent.getParcelableExtra(Constants.INTENT_CATEGORY);
                     categorizeNotesExecute(tag);
                 }
-                break;
-
-            case REQUEST_CODE_ADD_ALARMS:
-                list.clearChoices();
-                selectedNotes.clear();
-                finishActionMode();
-                list.invalidateViews();
                 break;
 
             default:
@@ -1154,9 +1135,9 @@ public class ListFragment extends BaseFragment implements OnViewTouchedListener,
 
         // Restore is performed immediately, otherwise undo bar is shown
         if (trash) {
-            for (Note note : getSelectedNotes().subList(getActionMode()!=null ? 0 : selectedNotesSize - 1, selectedNotesSize)) {
+            for (Note note : getSelectedNotes()) {
                 // Saves notes to be eventually restored at right position
-                undoNotesList.put(listAdapter.getPosition(note), note);
+                undoNotesList.put(listAdapter.getPosition(note) + undoNotesList.size(), note);
                 modifiedNotes.add(note);
                 listAdapter.remove(note);
             }
@@ -1277,13 +1258,13 @@ public class ListFragment extends BaseFragment implements OnViewTouchedListener,
         if (!archive) {
             archiveNote(getSelectedNotes(), false);
         }
-        for (Note note : getSelectedNotes().subList(getActionMode()!=null ? 0 : selectedNotesSize - 1, selectedNotesSize)) {
+        for (Note note : getSelectedNotes()) {
             // If is restore it will be done immediately, otherwise the undo bar will be shown
             if (archive) {
                 // Saves archived state to eventually undo
                 undoArchivedMap.put(note, note.isArchived());
                 // Saves notes to be eventually restored at right position
-                undoNotesList.put(listAdapter.getPosition(note), note);
+                undoNotesList.put(listAdapter.getPosition(note) + undoNotesList.size(), note);
                 modifiedNotes.add(note);
             }
 
@@ -1351,9 +1332,7 @@ public class ListFragment extends BaseFragment implements OnViewTouchedListener,
                 .title(R.string.categorize_as)
                 .adapter(new NavDrawerCategoryAdapter(mainActivity, categories), null)
                 .positiveText(R.string.add_category)
-                .positiveColorRes(R.color.colorPrimary)
                 .negativeText(R.string.remove_category)
-                .negativeColorRes(R.color.colorAccent)
                 .callback(new MaterialDialog.ButtonCallback() {
                     @Override
                     public void onPositive(MaterialDialog dialog) {
@@ -1384,15 +1363,14 @@ public class ListFragment extends BaseFragment implements OnViewTouchedListener,
     private void categorizeNotesExecute(Category category) {
         if (category != null)
             categorizeNote(getSelectedNotes(), category);
-            int selectedNotesSize = getSelectedCount();
-        for (Note note : getSelectedNotes().subList(getActionMode() != null ? 0 : selectedNotesSize - 1, selectedNotesSize)) {
+        for (Note note : getSelectedNotes()) {
             // If is restore it will be done immediately, otherwise the undo bar
             // will be shown
             if (category == null) {
                 // Saves categories associated to eventually undo
                 undoCategoryMap.put(note, note.getCategory());
                 // Saves notes to be eventually restored at right position
-                undoNotesList.put(listAdapter.getPosition(note), note);
+                undoNotesList.put(listAdapter.getPosition(note) + undoNotesList.size(), note);
                 modifiedNotes.add(note);
             }
             // Update adapter content if actual navigation is the category
@@ -1411,6 +1389,10 @@ public class ListFragment extends BaseFragment implements OnViewTouchedListener,
         // If list is empty again Mr Jingles will appear again
         if (listAdapter.getCount() == 0)
             list.setEmptyView(empyListItem);
+
+        if (getActionMode() != null) {
+            getActionMode().finish();
+        }
 
         // Advice to user
         String msg;
@@ -1525,15 +1507,12 @@ public class ListFragment extends BaseFragment implements OnViewTouchedListener,
 //		list.clearChoices();
 //		finishActionMode();
 //	}
-    private List<Note> reverse(List<Note> arrayList){
-        java.util.Collections.reverse(arrayList);
-        return arrayList;
-    }
+
 
     @Override
     public void onUndo(Parcelable undoToken) {
         // Cycles removed items to re-insert into adapter
-        for (Note note : reverse(modifiedNotes)) {
+        for (Note note : modifiedNotes) {
             //   Manages uncategorize or archive  undo
             if ((undoCategorize && !Navigation.checkNavigationCategory(undoCategoryMap.get(note)))
                     || undoArchive && !Navigation.checkNavigation(Navigation.NOTES)) {
@@ -1648,22 +1627,22 @@ public class ListFragment extends BaseFragment implements OnViewTouchedListener,
 		final Note finalMergedNote = NotesHelper.mergeNotes(getSelectedNotes(), notesMergeEvent.keepMergedNotes);
 		new Handler(Looper.getMainLooper()).post(() -> {
 
-            if (!notesMergeEvent.keepMergedNotes) {
-                ArrayList<String> notesIds = new ArrayList<>();
-                for (Note selectedNote : getSelectedNotes()) {
-                    notesIds.add(String.valueOf(selectedNote.get_id()));
-                }
-                mainActivity.getIntent().putExtra("merged_notes", notesIds);
-            }
+			if (!notesMergeEvent.keepMergedNotes) {
+				ArrayList<String> notesIds = new ArrayList<>();
+				for (Note selectedNote : getSelectedNotes()) {
+					notesIds.add(String.valueOf(selectedNote.get_id()));
+				}
+				mainActivity.getIntent().putExtra("merged_notes", notesIds);
+			}
 
-            getSelectedNotes().clear();
-            if (getActionMode() != null) {
-                getActionMode().finish();
-            }
+			getSelectedNotes().clear();
+			if (getActionMode() != null) {
+				getActionMode().finish();
+			}
 
-            mainActivity.getIntent().setAction(Constants.ACTION_MERGE);
-            mainActivity.switchToDetail(finalMergedNote);
-        });
+			mainActivity.getIntent().setAction(Constants.ACTION_MERGE);
+			mainActivity.switchToDetail(finalMergedNote);
+		});
     }
 
 
@@ -1739,29 +1718,6 @@ public class ListFragment extends BaseFragment implements OnViewTouchedListener,
 
     public MenuItem getSearchMenuItem() {
         return searchMenuItem;
-    }
-
-
-    private boolean isFabAllowed() {
-        return isFabAllowed(false);
-    }
-
-
-    private boolean isFabAllowed(boolean actionModeFinishing) {
-
-        boolean isAllowed = true;
-
-        // Actionmode check
-        isAllowed = isAllowed && (getActionMode() == null || actionModeFinishing);
-        // Navigation check
-        int navigation = Navigation.getNavigation();
-        isAllowed = isAllowed && navigation != Navigation.ARCHIVE && navigation != Navigation.REMINDERS && navigation
-                != Navigation.TRASH;
-        // Navigation drawer check
-        isAllowed = isAllowed && mainActivity.getDrawerLayout() != null && !mainActivity.getDrawerLayout().isDrawerOpen
-                (GravityCompat.START);
-
-        return isAllowed;
     }
 
 

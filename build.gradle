@@ -30,8 +30,9 @@ allprojects {
     repositories {
         mavenLocal()
         jcenter()
-        maven {url "https://jitpack.io"}
-        maven {url "http://dl.bintray.com/tbruyelle/tbruyelle" }
+        maven {
+            url "https://jitpack.io"
+        }
     }
 }
 

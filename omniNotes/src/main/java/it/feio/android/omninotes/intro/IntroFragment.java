@@ -7,33 +7,33 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.TextView;
-import butterknife.Bind;
 import butterknife.ButterKnife;
+import butterknife.InjectView;
 import it.feio.android.omninotes.R;
 
 
 public class IntroFragment extends Fragment {
 
-	@Bind(R.id.intro_background)
+	@InjectView(R.id.intro_background)
 	View background;
 
-	@Bind(R.id.intro_title)
+	@InjectView(R.id.intro_title)
 	TextView title;
 
-	@Bind(R.id.intro_image)
+	@InjectView(R.id.intro_image)
 	ImageView image;
 
-	@Bind(R.id.intro_image_small)
+	@InjectView(R.id.intro_image_small)
 	ImageView image_small;
 
-	@Bind(R.id.intro_description)
+	@InjectView(R.id.intro_description)
 	TextView description;
 
 
 	@Override
 	public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
 		View v = inflater.inflate(R.layout.intro_slide, container, false);
-		ButterKnife.bind(this, v);
+		ButterKnife.inject(this, v);
 		return v;
 	}
 }

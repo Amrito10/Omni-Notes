@@ -18,6 +18,7 @@
 package it.feio.android.omninotes;
 
 import android.animation.ValueAnimator;
+import android.content.res.Resources;
 import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Bundle;
@@ -84,6 +85,7 @@ public class NavigationDrawerFragment extends Fragment {
     public void onActivityCreated(Bundle savedInstanceState) {
         super.onActivityCreated(savedInstanceState);
         mActivity = (MainActivity) getActivity();
+        initImage();
     }
 
 
@@ -198,6 +200,15 @@ public class NavigationDrawerFragment extends Fragment {
         mDrawerToggle.syncState();
 
         Log.d(Constants.TAG, "Finished navigation drawer initialization");
+    }
+
+
+    private void initImage() {
+        ImageView navDrawerImage = (ImageView) getActivity().findViewById(R.id.navdrawer_image);
+        ViewGroup.LayoutParams params = navDrawerImage.getLayoutParams();
+        int statusBarHeight = Display.getStatusBarHeight(getActivity());
+        params.height = params.height + statusBarHeight;
+        navDrawerImage.setLayoutParams(params);
     }
 
 

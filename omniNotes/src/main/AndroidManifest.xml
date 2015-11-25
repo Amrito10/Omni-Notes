@@ -166,15 +166,6 @@
             android:noHistory="true"
             android:theme="@style/OmniNotesTheme.NoDisplay" />
 
-        <!-- Home launcher shortcut -->
-        <activity
-            android:name="it.feio.android.omninotes.ShortcutActivity">
-            <intent-filter>
-                <action android:name="android.intent.action.CREATE_SHORTCUT"/>
-                <category android:name="android.intent.category.DEFAULT"/>
-            </intent-filter>
-        </activity>
-
         <!-- Stats -->
         <activity
             android:name="it.feio.android.omninotes.StatsActivity"
@@ -204,19 +195,10 @@
         </receiver>
 
         <!-- Restore on reboot alarm service -->
-        <service android:name="it.feio.android.omninotes.async.AlarmRestoreOnRebootService"/>
-
-        <!-- Notification listener service -->
-        <service android:name=".services.NotificationListener"
-                 android:label="@string/app_name"
-                 android:permission="android.permission.BIND_NOTIFICATION_LISTENER_SERVICE">
-            <intent-filter>
-                <action android:name="android.service.notification.NotificationListenerService"/>
-            </intent-filter>
-        </service>
+        <service android:name="it.feio.android.omninotes.async.AlarmRestoreOnRebootService"></service>
 
         <!-- Data export and import service -->
-        <service android:name="it.feio.android.omninotes.async.DataBackupIntentService"/>
+        <service android:name="it.feio.android.omninotes.async.DataBackupIntentService"></service>
 
         <!-- Widget configuration Activity -->
         <activity

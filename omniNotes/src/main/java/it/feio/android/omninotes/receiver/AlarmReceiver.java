@@ -37,6 +37,9 @@ public class AlarmReceiver extends BroadcastReceiver {
 
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
+=======
+>>>>>>> parent of f0b1657... Code smell: Long method
     @Override
     public void onReceive(Context mContext, Intent intent) {
         try {
@@ -141,6 +144,7 @@ public class AlarmReceiver extends BroadcastReceiver {
             notificationsHelper.setVibration();
         }
     }
+<<<<<<< HEAD
 =======
 =======
 >>>>>>> parent of 2a9157c... Code smell: Long method
@@ -266,4 +270,6 @@ public class AlarmReceiver extends BroadcastReceiver {
 		notificationsHelper.show(note.get_id());
 	}
 >>>>>>> parent of 2a9157c... Code smell: Long method
+=======
+>>>>>>> parent of f0b1657... Code smell: Long method
 }

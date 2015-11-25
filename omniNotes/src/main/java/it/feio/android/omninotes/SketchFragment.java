@@ -35,8 +35,8 @@ import android.widget.LinearLayout.LayoutParams;
 import android.widget.PopupWindow;
 import android.widget.SeekBar;
 import android.widget.SeekBar.OnSeekBarChangeListener;
-import butterknife.Bind;
 import butterknife.ButterKnife;
+import butterknife.InjectView;
 import com.afollestad.materialdialogs.MaterialDialog;
 import com.larswerkman.holocolorpicker.ColorPicker;
 import com.larswerkman.holocolorpicker.OpacityBar;
@@ -55,12 +55,12 @@ import java.io.FileOutputStream;
 
 public class SketchFragment extends Fragment implements OnDrawChangedListener {
 
-    @Bind(R.id.sketch_stroke) ImageView stroke;
-    @Bind(R.id.sketch_eraser) ImageView eraser;
-    @Bind(R.id.drawing) SketchView mSketchView;
-    @Bind(R.id.sketch_undo) ImageView undo;
-    @Bind(R.id.sketch_redo) ImageView redo;
-    @Bind(R.id.sketch_erase) ImageView erase;
+    @InjectView(R.id.sketch_stroke) ImageView stroke;
+    @InjectView(R.id.sketch_eraser) ImageView eraser;
+    @InjectView(R.id.drawing) SketchView mSketchView;
+    @InjectView(R.id.sketch_undo) ImageView undo;
+    @InjectView(R.id.sketch_redo) ImageView redo;
+    @InjectView(R.id.sketch_erase) ImageView erase;
     private int seekBarStrokeProgress, seekBarEraserProgress;
     private View popupLayout, popupEraserLayout;
     private ImageView strokeImageView, eraserImageView;
@@ -88,9 +88,16 @@ public class SketchFragment extends Fragment implements OnDrawChangedListener {
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.fragment_sketch, container, false);
-        ButterKnife.bind(this, view);
+        ButterKnife.inject(this, view);
         return view;
     }
+
+
+    @Override
+    public void onAttach(android.app.Activity activity) {
+        super.onAttach(activity);
+    }
+
 
     @Override
     public void onActivityCreated(Bundle savedInstanceState) {
@@ -192,6 +199,13 @@ public class SketchFragment extends Fragment implements OnDrawChangedListener {
         mColorPicker.setColor(mSketchView.getStrokeColor());
         mColorPicker.setOldCenterColor(mSketchView.getStrokeColor());
     }
+
+
+    @Override
+    public void onPause() {
+        super.onPause();
+    }
+
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {

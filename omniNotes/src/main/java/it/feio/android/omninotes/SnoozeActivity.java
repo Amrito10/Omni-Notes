@@ -37,14 +37,12 @@ import it.feio.android.omninotes.utils.ReminderHelper;
 import it.feio.android.omninotes.utils.date.DateHelper;
 import it.feio.android.omninotes.utils.date.ReminderPickers;
 
-import java.util.Arrays;
 import java.util.Calendar;
 
 
 public class SnoozeActivity extends ActionBarActivity implements OnReminderPickedListener, DatePickerDialog.OnDateSetListener, TimePickerDialog.OnTimeSetListener {
 
     private Note note;
-    private Note[] notes;
     private ReminderPickers onDateSetListener;
     private ReminderPickers onTimeSetListener;
 
@@ -53,18 +51,10 @@ public class SnoozeActivity extends ActionBarActivity implements OnReminderPicke
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        if (getIntent().getParcelableExtra(Constants.INTENT_NOTE) != null) {
-            note = getIntent().getParcelableExtra(Constants.INTENT_NOTE);
-            manageNotification(getSharedPreferences(Constants.PREFS_NAME, MODE_MULTI_PROCESS));
-        } else {
-            Object[] notesObjs = (Object[]) getIntent().getExtras().get(Constants.INTENT_NOTE);
-            notes = Arrays.copyOf(notesObjs, notesObjs.length, Note[].class);
-            postpone(getSharedPreferences(Constants.PREFS_NAME, MODE_MULTI_PROCESS), DateHelper.getNextMinute(), null);
-        }
-    }
+        note = getIntent().getParcelableExtra(Constants.INTENT_NOTE);
 
+        SharedPreferences prefs = getSharedPreferences(Constants.PREFS_NAME, MODE_MULTI_PROCESS);
 
-    private void manageNotification(SharedPreferences prefs) {
         if (Constants.ACTION_DISMISS.equals(getIntent().getAction())) {
             setNextRecurrentReminder(note);
             finish();
@@ -74,58 +64,37 @@ public class SnoozeActivity extends ActionBarActivity implements OnReminderPicke
             updateNoteReminder(newReminder, note);
             finish();
         } else if (Constants.ACTION_POSTPONE.equals(getIntent().getAction())) {
-            postpone(prefs, Long.parseLong(note.getAlarm()), note.getRecurrenceRule());
+            int pickerType = prefs.getBoolean("settings_simple_calendar", false) ? ReminderPickers.TYPE_AOSP :
+                    ReminderPickers.TYPE_GOOGLE;
+            ReminderPickers reminderPicker = new ReminderPickers(this, this, pickerType);
+            reminderPicker.pick(Long.parseLong(note.getAlarm()), note.getRecurrenceRule());
+            onDateSetListener = reminderPicker;
+            onTimeSetListener = reminderPicker;
         } else {
             Intent intent = new Intent(this, MainActivity.class);
             intent.putExtra(Constants.INTENT_KEY, note.get_id());
             intent.setAction(Constants.ACTION_NOTIFICATION_CLICK);
             startActivity(intent);
-            finish();
         }
         removeNotification(note);
     }
 
 
-    private void postpone(SharedPreferences prefs, Long alarm, String recurrenceRule) {
-        int pickerType = prefs.getBoolean("settings_simple_calendar", false) ? ReminderPickers.TYPE_AOSP :
-				ReminderPickers.TYPE_GOOGLE;
-        ReminderPickers reminderPicker = new ReminderPickers(this, this, pickerType);
-        reminderPicker.pick(alarm, recurrenceRule);
-        onDateSetListener = reminderPicker;
-        onTimeSetListener = reminderPicker;
-    }
-
-
     private void removeNotification(Note note) {
         NotificationManager manager = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
-        manager.cancel(String.valueOf(note.get_id()), 0);
+        manager.cancel(note.get_id().intValue());
     }
 
 
     @Override
     public void onReminderPicked(long reminder) {
-        if (this.note != null) {
-            this.note.setAlarm(reminder);
-        } else {
-            for (Note note : this.notes) {
-                note.setAlarm(reminder);
-            }
-        }
+        this.note.setAlarm(reminder);
     }
 
     @Override
     public void onRecurrenceReminderPicked(String recurrenceRule) {
-        if (this.note != null) {
-            this.note.setRecurrenceRule(recurrenceRule);
-            setNextRecurrentReminder(this.note);
-        } else {
-            for (Note note : this.notes) {
-                note.setRecurrenceRule(recurrenceRule);
-                setNextRecurrentReminder(note);
-            }
-            setResult(RESULT_OK, getIntent());
-        }
-        finish();
+        this.note.setRecurrenceRule(recurrenceRule);
+        setNextRecurrentReminder(note);
     }
 
 

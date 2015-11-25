@@ -36,6 +36,7 @@ import it.feio.android.omninotes.utils.TextHelper;
 public class AlarmReceiver extends BroadcastReceiver {
 
 <<<<<<< HEAD
+<<<<<<< HEAD
     @Override
     public void onReceive(Context mContext, Intent intent) {
         try {
@@ -141,6 +142,8 @@ public class AlarmReceiver extends BroadcastReceiver {
         }
     }
 =======
+=======
+>>>>>>> parent of 2a9157c... Code smell: Long method
 	@Override
 	public void onReceive(Context mContext, Intent intent) {
 		try {
@@ -166,13 +169,23 @@ public class AlarmReceiver extends BroadcastReceiver {
 		Intent snoozeIntent = new Intent(mContext, SnoozeActivity.class);
 		snoozeIntent.setAction(Constants.ACTION_SNOOZE);
 		snoozeIntent.putExtra(Constants.INTENT_NOTE, (android.os.Parcelable) note);
+<<<<<<< HEAD
 		PendingIntent piSnooze = PendingIntent.getActivity(mContext, getUniqueRequestCode(note), snoozeIntent,
+=======
+		snoozeIntent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+		PendingIntent piSnooze = PendingIntent.getActivity(mContext, 0, snoozeIntent,
+>>>>>>> parent of 2a9157c... Code smell: Long method
 				PendingIntent.FLAG_UPDATE_CURRENT);
 
 		Intent postponeIntent = new Intent(mContext, SnoozeActivity.class);
 		postponeIntent.setAction(Constants.ACTION_POSTPONE);
 		postponeIntent.putExtra(Constants.INTENT_NOTE, (android.os.Parcelable) note);
+<<<<<<< HEAD
 		PendingIntent piPostpone = PendingIntent.getActivity(mContext, getUniqueRequestCode(note), postponeIntent,
+=======
+		snoozeIntent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+		PendingIntent piPostpone = PendingIntent.getActivity(mContext, 0, postponeIntent,
+>>>>>>> parent of 2a9157c... Code smell: Long method
 				PendingIntent.FLAG_UPDATE_CURRENT);
 
 		String snoozeDelay = mContext.getSharedPreferences(Constants.PREFS_NAME,
@@ -190,7 +203,11 @@ public class AlarmReceiver extends BroadcastReceiver {
 		intent.setAction(Constants.ACTION_NOTIFICATION_CLICK + Long.toString(System.currentTimeMillis()));
 
 		// Creates the PendingIntent
+<<<<<<< HEAD
 		PendingIntent notifyIntent = PendingIntent.getActivity(mContext, getUniqueRequestCode(note), intent,
+=======
+		PendingIntent notifyIntent = PendingIntent.getActivity(mContext, 0, intent,
+>>>>>>> parent of 2a9157c... Code smell: Long method
 				PendingIntent.FLAG_UPDATE_CURRENT);
 
 		NotificationsHelper notificationsHelper = new NotificationsHelper(mContext);
@@ -210,6 +227,7 @@ public class AlarmReceiver extends BroadcastReceiver {
 						it.feio.android.omninotes.utils.TextHelper.capitalize(mContext.getString(R.string
 								.add_reminder)), piPostpone);
 
+<<<<<<< HEAD
         setAlarm(prefs, notificationsHelper);
 
 		setVibrate(prefs, notificationsHelper);
@@ -233,4 +251,19 @@ public class AlarmReceiver extends BroadcastReceiver {
 	}
 >>>>>>> 69b7ebca181d653bbc2e1cc041d6698dfe36262d
 >>>>>>> 24bae10f790ff30aa2be26c975a4a8da9c4e7053
+=======
+		// Ringtone options
+		String ringtone = prefs.getString("settings_notification_ringtone", null);
+		if (ringtone != null) {
+			notificationsHelper.setRingtone(ringtone);
+		}
+
+		// Vibration options
+		if (prefs.getBoolean("settings_notification_vibration", true)) {
+			notificationsHelper.setVibration();
+		}
+
+		notificationsHelper.show(note.get_id());
+	}
+>>>>>>> parent of 2a9157c... Code smell: Long method
 }

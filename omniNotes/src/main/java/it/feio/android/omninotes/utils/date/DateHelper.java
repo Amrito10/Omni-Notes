@@ -247,9 +247,8 @@ public class DateHelper {
             EventRecurrence recurrenceEvent = new EventRecurrence();
             recurrenceEvent.setStartDate(new Time("" + new Date().getTime()));
             recurrenceEvent.parse(recurrenceRule);
-            String srt = EventRecurrenceFormatter.getRepeatString(mContext.getApplicationContext(),
+            return EventRecurrenceFormatter.getRepeatString(mContext.getApplicationContext(),
                     mContext.getResources(), recurrenceEvent, true);
-            return srt;
         } else {
             return "";
         }
@@ -299,6 +298,20 @@ public class DateHelper {
         cal2.setTimeInMillis(date2);
         return cal1.get(Calendar.YEAR) == cal2.get(Calendar.YEAR) && cal1.get(Calendar.DAY_OF_YEAR) == cal2.get
                 (Calendar.DAY_OF_YEAR);
+    }
+
+
+    public static long getNextMinute() {
+        return Calendar.getInstance().getTimeInMillis() + 1000 * 60;
+    }
+
+
+    public static boolean isFuture(String timestamp) {
+        try {
+            return Long.parseLong(timestamp) >  Calendar.getInstance().getTimeInMillis();
+        } catch (Exception e) {
+            return false;
+        }
     }
 
 }

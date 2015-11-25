@@ -170,11 +170,7 @@ public class NoteAdapter extends ArrayAdapter<Note> implements Insertable {
                     holder.content.setText(titleAndContent[1]);
                     holder.content.setVisibility(View.VISIBLE);
                 } else {
-                    if (expandedView) {
-                        holder.content.setVisibility(View.INVISIBLE);
-                    } else {
-                        holder.content.setVisibility(View.GONE);
-                    }
+                    holder.content.setVisibility(View.INVISIBLE);
                 }
             }
         } catch (RejectedExecutionException e) {
@@ -310,8 +306,7 @@ public class NoteAdapter extends ArrayAdapter<Note> implements Insertable {
         // Overrides font sizes with the one selected from user
         Fonts.overrideTextSize(mActivity, mActivity.getSharedPreferences(Constants.PREFS_NAME,
                 Context.MODE_MULTI_PROCESS), convertView);
-        NoteViewHolder holder = new NoteViewHolder(convertView);
-        return holder;
+        return new NoteViewHolder(convertView);
     }
 
 }
